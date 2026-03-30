@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sales Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #3B82F6;
+  --primary-dark: #1E40AF;
+  --bg: #F8FAFC;
+  --white: #ffffff;
+  --gray-50: #F8FAFC;
+  --gray-100: #F1F5F9;
+  --gray-200: #E2E8F0;
+  --gray-300: #CBD5E1;
+  --gray-400: #94A3B8;
+  --gray-500: #64748B;
+  --gray-600: #475569;
+  --gray-700: #334155;
+  --gray-800: #1E293B;
+  --gray-900: #0F172A;
+  --gold: #F59E0B;
+  --silver: #9CA3AF;
+  --bronze: #B45309;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow: 0 4px 16px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.05);
+  --shadow-lg: 0 10px 40px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.06);
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'IBM Plex Sans Thai', 'Sarabun', sans-serif;
+  background: var(--bg);
+  color: var(--gray-800);
+  min-height: 100vh;
+}
+
+/* NAV */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
+  box-shadow: 0 2px 20px rgba(30,64,175,0.3);
+  padding: 0 28px;
+  height: 60px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav-brand {
+  font-size: 17px; font-weight: 700; color: #fff; letter-spacing: -0.3px;
+  display: flex; align-items: center; gap: 9px;
+}
+.nav-brand svg { opacity: 0.9; }
+.nav-links { display: flex; gap: 6px; }
+.nav-btn {
+  padding: 7px 18px; border-radius: 8px; font-size: 14px; font-weight: 500;
+  cursor: pointer; border: none; font-family: inherit;
+  transition: all 0.2s; color: rgba(255,255,255,0.85); background: transparent;
+}
+.nav-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+.nav-btn.active { background: rgba(255,255,255,0.22); color: #fff; }
+
+/* PAGE CONTAINERS */
+.page { display: none; min-height: calc(100vh - 60px); }
+.page.active { display: block; }
+
+/* ===== PAGE 1: RECORD ===== */
+.record-container {
+  max-width: 640px; margin: 0 auto; padding: 36px 20px 120px;
+}
+.page-title {
+  font-size: 22px; font-weight: 700; color: var(--gray-900);
+  margin-bottom: 6px; letter-spacing: -0.4px;
+}
+.page-subtitle { font-size: 14px; color: var(--gray-400); margin-bottom: 28px; }
+
+.card {
+  background: var(--white); border-radius: var(--radius);
+  box-shadow: var(--shadow); border: 1px solid var(--gray-100);
+  padding: 28px;
+}
+
+.form-group { margin-bottom: 20px; }
+.form-label {
+  display: block; font-size: 13px; font-weight: 600;
+  color: var(--gray-600); margin-bottom: 8px; letter-spacing: 0.1px;
+}
+.form-control {
+  width: 100%; padding: 11px 14px; border-radius: var(--radius-sm);
+  border: 1.5px solid var(--gray-200); font-size: 14px; font-family: inherit;
+  background: var(--white); color: var(--gray-800);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none; appearance: none;
+}
+.form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
+
+/* Employee Select */
+.emp-wrapper { position: relative; }
+.emp-display {
+  width: 100%; padding: 11px 14px; border-radius: var(--radius-sm);
+  border: 1.5px solid var(--gray-200); font-size: 14px; font-family: inherit;
+  background: var(--white); color: var(--gray-800);
+  cursor: pointer; display: flex; align-items: center; justify-content: space-between;
+  transition: border-color 0.2s, box-shadow 0.2s; user-select: none;
+}
+.emp-display:focus, .emp-display.open {
+  border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59,130,246,0.12); outline: none;
+}
+.emp-dropdown {
+  position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 200;
+  background: var(--white); border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-sm); box-shadow: var(--shadow-lg);
+  overflow: hidden; display: none; animation: fadeDown 0.15s ease;
+}
+.emp-dropdown.open { display: block; }
+@keyframes fadeDown { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+.emp-search {
+  padding: 10px 12px; border-bottom: 1px solid var(--gray-100);
+  display: flex; align-items: center; gap: 8px;
+}
+.emp-search input {
+  border: none; outline: none; font-size: 14px; font-family: inherit;
+  color: var(--gray-800); background: transparent; flex: 1;
+}
+.emp-list { max-height: 200px; overflow-y: auto; }
+.emp-item {
+  padding: 10px 14px; font-size: 14px; cursor: pointer;
+  transition: background 0.15s; display: flex; align-items: center; gap: 8px;
+}
+.emp-item:hover { background: var(--gray-50); }
+.emp-item.selected { color: var(--primary); font-weight: 600; background: #EFF6FF; }
+.emp-item .emp-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white; font-size: 12px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.emp-empty { padding: 20px; text-align: center; color: var(--gray-400); font-size: 13px; }
+
+/* VAT Section */
+.vat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.input-prefix {
+  position: relative;
+}
+.input-prefix span {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  font-size: 14px; color: var(--gray-400); font-weight: 500; pointer-events: none;
+}
+.input-prefix input { padding-left: 28px; }
+.vat-checkbox-row {
+  margin-top: 12px; display: flex; align-items: center; gap: 10px;
+}
+.checkbox-custom {
+  width: 18px; height: 18px; border: 2px solid var(--gray-300);
+  border-radius: 5px; cursor: pointer; display: flex; align-items: center;
+  justify-content: center; transition: all 0.2s; flex-shrink: 0;
+}
+.checkbox-custom.checked { background: var(--primary); border-color: var(--primary); }
+.checkbox-custom svg { display: none; }
+.checkbox-custom.checked svg { display: block; }
+.checkbox-label { font-size: 14px; color: var(--gray-600); cursor: pointer; }
+
+/* Submit Btn */
+.btn-submit {
+  width: 100%; padding: 13px; border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white; font-size: 15px; font-weight: 600; font-family: inherit;
+  border: none; cursor: pointer; margin-top: 8px;
+  transition: all 0.2s; box-shadow: 0 4px 14px rgba(59,130,246,0.35);
+}
+.btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(59,130,246,0.45); }
+.btn-submit:active { transform: none; }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--gray-900); color: white; padding: 12px 22px; border-radius: 30px;
+  font-size: 14px; font-weight: 500; opacity: 0; pointer-events: none;
+  transition: all 0.3s; z-index: 9999; white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.error { background: #EF4444; }
+
+/* FLOATING MENU */
+.fab-container { position: fixed; bottom: 28px; right: 28px; z-index: 500; }
+.fab-btn {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white; border: none; cursor: pointer; font-size: 20px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 6px 24px rgba(59,130,246,0.45); transition: all 0.2s;
+}
+.fab-btn:hover { transform: scale(1.08); }
+.fab-menu {
+  position: absolute; bottom: 64px; right: 0;
+  background: var(--white); border-radius: 12px; box-shadow: var(--shadow-lg);
+  border: 1px solid var(--gray-100); overflow: hidden; display: none; min-width: 200px;
+  animation: fadeUp 0.2s ease;
+}
+.fab-menu.open { display: block; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.fab-menu-item {
+  padding: 13px 18px; font-size: 14px; cursor: pointer; display: flex; align-items: center;
+  gap: 10px; color: var(--gray-700); transition: background 0.15s;
+}
+.fab-menu-item:hover { background: var(--gray-50); }
+.fab-menu-item + .fab-menu-item { border-top: 1px solid var(--gray-100); }
+
+/* Modal */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000;
+  display: none; align-items: center; justify-content: center; backdrop-filter: blur(2px);
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--white); border-radius: var(--radius); padding: 28px;
+  min-width: 340px; max-width: 420px; width: 90%; box-shadow: var(--shadow-lg);
+  animation: scaleIn 0.2s ease;
+}
+@keyframes scaleIn { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: scale(1); } }
+.modal-title { font-size: 17px; font-weight: 700; margin-bottom: 18px; color: var(--gray-900); }
+.modal-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+.btn-cancel {
+  padding: 9px 20px; border-radius: var(--radius-sm); border: 1.5px solid var(--gray-200);
+  background: transparent; font-size: 14px; font-weight: 500; color: var(--gray-600);
+  cursor: pointer; font-family: inherit; transition: all 0.2s;
+}
+.btn-cancel:hover { background: var(--gray-50); }
+.btn-primary {
+  padding: 9px 20px; border-radius: var(--radius-sm); border: none;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  font-size: 14px; font-weight: 600; color: white;
+  cursor: pointer; font-family: inherit; transition: all 0.2s;
+}
+.btn-primary:hover { transform: translateY(-1px); }
+
+/* Recent list modal */
+.recent-list { max-height: 400px; overflow-y: auto; }
+.recent-item {
+  padding: 14px 0; border-bottom: 1px solid var(--gray-100);
+  display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: start;
+}
+.recent-item:last-child { border-bottom: none; }
+.recent-meta { font-size: 13px; color: var(--gray-400); margin-top: 3px; }
+.recent-amount { font-size: 15px; font-weight: 700; color: var(--primary); text-align: right; }
+.recent-company { font-size: 12px; color: var(--gray-400); text-align: right; margin-top: 2px; }
+.recent-empty { text-align: center; padding: 30px; color: var(--gray-400); font-size: 14px; }
+
+/* ===== PAGE 2: SUMMARY ===== */
+.summary-container { padding: 28px 24px 80px; max-width: 1280px; margin: 0 auto; }
+
+.summary-header-row {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 24px; gap: 16px; flex-wrap: wrap;
+}
+.summary-title {
+  font-size: 21px; font-weight: 700; color: var(--gray-900); letter-spacing: -0.4px;
+  line-height: 1.3;
+}
+.summary-subtitle { font-size: 13px; color: var(--gray-400); margin-top: 4px; }
+
+/* Filter panel */
+.filter-card {
+  background: var(--white); border-radius: var(--radius); padding: 20px 24px;
+  box-shadow: var(--shadow-sm); border: 1px solid var(--gray-100);
+  margin-bottom: 22px;
+}
+.filter-row { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; }
+.filter-group { display: flex; flex-direction: column; gap: 6px; }
+.filter-label { font-size: 12px; font-weight: 600; color: var(--gray-500); letter-spacing: 0.3px; }
+.filter-control {
+  padding: 9px 12px; border-radius: var(--radius-sm); border: 1.5px solid var(--gray-200);
+  font-size: 13px; font-family: inherit; background: var(--white); color: var(--gray-800);
+  min-width: 120px; outline: none; transition: border-color 0.2s;
+}
+.filter-control:focus { border-color: var(--primary); }
+.filter-sep { display: flex; align-items: flex-end; padding-bottom: 10px; color: var(--gray-400); font-size: 13px; }
+.btn-reset {
+  padding: 9px 18px; border-radius: var(--radius-sm); border: 1.5px solid var(--gray-200);
+  background: transparent; font-size: 13px; color: var(--gray-600); cursor: pointer;
+  font-family: inherit; transition: all 0.2s; white-space: nowrap;
+}
+.btn-reset:hover { background: var(--gray-50); border-color: var(--gray-300); }
+
+/* KPI Row */
+.kpi-row {
+  display: flex; gap: 14px; margin-bottom: 22px; overflow-x: auto; padding-bottom: 4px;
+}
+.kpi-row::-webkit-scrollbar { height: 4px; }
+.kpi-row::-webkit-scrollbar-track { background: transparent; }
+.kpi-row::-webkit-scrollbar-thumb { background: var(--gray-200); border-radius: 2px; }
+.kpi-card {
+  background: var(--white); border-radius: var(--radius); padding: 20px 22px;
+  box-shadow: var(--shadow-sm); border: 1px solid var(--gray-100);
+  flex-shrink: 0; min-width: 160px;
+}
+.kpi-label { font-size: 12px; font-weight: 600; color: var(--gray-400); letter-spacing: 0.5px; margin-bottom: 10px; }
+.kpi-value { font-size: 22px; font-weight: 800; color: var(--gray-900); letter-spacing: -0.5px; }
+.kpi-value.blue { color: var(--primary-dark); }
+.kpi-sub { font-size: 12px; color: var(--gray-400); margin-top: 4px; }
+
+.top-sellers-card {
+  background: var(--white); border-radius: var(--radius); padding: 20px 22px;
+  box-shadow: var(--shadow-sm); border: 1px solid var(--gray-100); flex-shrink: 0; flex: 1; min-width: 240px;
+}
+.top-sellers-title { font-size: 12px; font-weight: 700; color: var(--gray-500); letter-spacing: 0.5px; margin-bottom: 12px; }
+.seller-item {
+  display: flex; align-items: center; gap: 10px; padding: 5px 0;
+}
+.seller-rank { font-size: 18px; line-height: 1; }
+.seller-name { font-size: 14px; font-weight: 600; color: var(--gray-800); flex: 1; }
+.seller-amount { font-size: 14px; font-weight: 700; color: var(--primary-dark); }
+
+/* Charts */
+.charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 22px; }
+@media (max-width: 768px) { .charts-row { grid-template-columns: 1fr; } }
+.chart-card {
+  background: var(--white); border-radius: var(--radius); padding: 22px;
+  box-shadow: var(--shadow-sm); border: 1px solid var(--gray-100);
+}
+.chart-title { font-size: 14px; font-weight: 700; color: var(--gray-700); margin-bottom: 18px; }
+
+/* Bar Chart */
+.bar-chart { display: flex; flex-direction: column; gap: 10px; }
+.bar-row { display: flex; align-items: center; gap: 12px; }
+.bar-name { font-size: 13px; color: var(--gray-600); font-weight: 500; width: 80px; flex-shrink: 0; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar-track { flex: 1; height: 32px; background: var(--gray-100); border-radius: 6px; overflow: hidden; position: relative; }
+.bar-fill {
+  height: 100%; border-radius: 6px; display: flex; align-items: center;
+  justify-content: flex-end; padding-right: 8px; min-width: 10%;
+  transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+  position: relative;
+}
+.bar-fill-employee { background: linear-gradient(90deg, #60A5FA, #3B82F6); }
+.bar-fill-company { background: linear-gradient(90deg, #34D399, #059669); }
+.bar-label { font-size: 12px; font-weight: 700; color: white; white-space: nowrap; }
+
+/* Monthly chart */
+.monthly-chart { display: flex; align-items: flex-end; gap: 8px; height: 160px; padding-bottom: 4px; }
+.month-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
+.month-bar { width: 100%; border-radius: 6px 6px 0 0; background: linear-gradient(180deg, #60A5FA, #2563EB); min-height: 8px; transition: height 0.5s ease; position: relative; }
+.month-bar-label { font-size: 11px; font-weight: 700; color: var(--gray-600); text-align: center; white-space: nowrap; }
+.month-bar-amount { position: absolute; top: -38px; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 700; color: var(--gray-700); white-space: nowrap; background: white; border-radius: 4px; padding: 2px 6px; box-shadow: var(--shadow-sm); border: 1px solid var(--gray-200); }
+
+/* Table */
+.table-card {
+  background: var(--white); border-radius: var(--radius);
+  box-shadow: var(--shadow-sm); border: 1px solid var(--gray-100); overflow: hidden;
+  margin-bottom: 22px;
+}
+.table-header-row {
+  padding: 16px 20px; border-bottom: 1px solid var(--gray-100);
+  font-size: 14px; font-weight: 700; color: var(--gray-700);
+}
+table { width: 100%; border-collapse: collapse; }
+th {
+  padding: 13px 16px; text-align: left; font-size: 12px; font-weight: 700;
+  color: var(--gray-400); letter-spacing: 0.5px; background: var(--gray-50);
+  border-bottom: 1px solid var(--gray-100);
+}
+td {
+  padding: 13px 16px; font-size: 14px; color: var(--gray-700);
+  border-bottom: 1px solid var(--gray-50);
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--gray-50); }
+.td-amount { font-weight: 700; color: var(--gray-900); font-variant-numeric: tabular-nums; }
+.btn-action {
+  padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;
+  cursor: pointer; border: none; font-family: inherit; transition: all 0.15s;
+}
+.btn-edit { background: #EFF6FF; color: var(--primary); }
+.btn-edit:hover { background: #DBEAFE; }
+.btn-delete { background: #FEF2F2; color: #EF4444; }
+.btn-delete:hover { background: #FEE2E2; }
+.td-actions { display: flex; gap: 6px; }
+
+.no-data {
+  text-align: center; padding: 50px 20px; color: var(--gray-400); font-size: 15px;
+}
+.no-data-icon { font-size: 36px; margin-bottom: 10px; }
+
+/* Company dropdown with add */
+.company-wrapper { position: relative; }
+.company-select {
+  width: 100%; padding: 11px 14px; border-radius: var(--radius-sm);
+  border: 1.5px solid var(--gray-200); font-size: 14px; font-family: inherit;
+  background: var(--white); color: var(--gray-800); outline: none; appearance: none;
+  transition: border-color 0.2s; cursor: pointer;
+}
+.company-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
+.company-arrow {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  pointer-events: none; color: var(--gray-400);
+}
+
+@media (max-width: 640px) {
+  nav { padding: 0 16px; }
+  .record-container { padding: 20px 14px 100px; }
+  .summary-container { padding: 16px 14px 80px; }
+  .vat-row { grid-template-columns: 1fr; }
+  .kpi-row { flex-direction: row; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+    </svg>
+    Sales Dashboard
+  </div>
+  <div class="nav-links">
+    <button class="nav-btn active" id="nav-record" onclick="showPage('record')">บันทึกยอดขาย</button>
+    <button class="nav-btn" id="nav-summary" onclick="showPage('summary')">สรุปยอดขาย</button>
+  </div>
+</nav>
+
+<!-- PAGE 1: RECORD -->
+<div class="page active" id="page-record">
+  <div class="record-container">
+    <div class="page-title">บันทึกยอดขาย</div>
+    <div class="page-subtitle">กรอกข้อมูลการขายใหม่</div>
+    <div class="card">
+      <!-- Employee -->
+      <div class="form-group">
+        <label class="form-label">พนักงาน</label>
+        <div class="emp-wrapper">
+          <div class="emp-display" id="empDisplay" tabindex="0" onclick="toggleEmpDropdown()">
+            <span id="empDisplayText" style="color:var(--gray-400)">เลือกพนักงาน</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="emp-dropdown" id="empDropdown">
+            <div class="emp-search">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="empSearch" placeholder="ค้นหาพนักงาน..." oninput="filterEmployees(this.value)" onclick="event.stopPropagation()">
+            </div>
+            <div class="emp-list" id="empList"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Company -->
+      <div class="form-group">
+        <label class="form-label">บริษัท</label>
+        <div class="company-wrapper">
+          <select class="company-select" id="companySelect">
+            <option value="">เลือกบริษัท</option>
+          </select>
+          <div class="company-arrow">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Date -->
+      <div class="form-group">
+        <label class="form-label">วันที่</label>
+        <input type="date" class="form-control" id="saleDate">
+      </div>
+
+      <!-- VAT -->
+      <div class="form-group">
+        <label class="form-label">จำนวนเงิน</label>
+        <div class="vat-row">
+          <div class="form-group" style="margin-bottom:0">
+            <div style="font-size:12px;color:var(--gray-400);margin-bottom:6px;">ก่อน VAT</div>
+            <div class="input-prefix">
+              <span>฿</span>
+              <input type="number" class="form-control" id="amtBeforeVat" placeholder="0.00" oninput="handleBeforeVat()" step="0.01">
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <div style="font-size:12px;color:var(--gray-400);margin-bottom:6px;">รวม VAT</div>
+            <div class="input-prefix">
+              <span>฿</span>
+              <input type="number" class="form-control" id="amtWithVat" placeholder="0.00" oninput="handleWithVat()" step="0.01">
+            </div>
+          </div>
+        </div>
+        <div class="vat-checkbox-row" onclick="toggleNoVat()">
+          <div class="checkbox-custom" id="noVatCheck">
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 6 4.5 9.5 11 2.5"/></svg>
+          </div>
+          <span class="checkbox-label">ไม่มี VAT</span>
+        </div>
+      </div>
+
+      <button class="btn-submit" onclick="submitSale()">บันทึกยอดขาย</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 2: SUMMARY -->
+<div class="page" id="page-summary">
+  <div class="summary-container">
+    <div class="summary-header-row">
+      <div>
+        <div class="summary-title" id="summaryTitle">สรุปยอดขาย</div>
+        <div class="summary-subtitle" id="summarySubtitle"></div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-card">
+      <div class="filter-row">
+        <div class="filter-group">
+          <div class="filter-label">วันที่เริ่ม</div>
+          <input type="date" class="filter-control" id="filterFrom" onchange="onFilterChange('date-from')">
+        </div>
+        <div class="filter-sep">—</div>
+        <div class="filter-group">
+          <div class="filter-label">วันที่สิ้นสุด</div>
+          <input type="date" class="filter-control" id="filterTo" onchange="onFilterChange('date-to')">
+        </div>
+        <div class="filter-group">
+          <div class="filter-label">เดือนเริ่ม</div>
+          <select class="filter-control" id="filterMonthStart" onchange="onFilterChange('month')">
+            <option value="">เดือน</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <div class="filter-label">เดือนสิ้นสุด</div>
+          <select class="filter-control" id="filterMonthEnd" onchange="onFilterChange('month')">
+            <option value="">เดือน</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <div class="filter-label">ปีเริ่ม</div>
+          <select class="filter-control" id="filterYearStart" onchange="onFilterChange('year')">
+            <option value="">ปี</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <div class="filter-label">ปีสิ้นสุด</div>
+          <select class="filter-control" id="filterYearEnd" onchange="onFilterChange('year')">
+            <option value="">ปี</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <div class="filter-label">ไตรมาส</div>
+          <select class="filter-control" id="filterQuarter" onchange="onFilterChange('quarter')">
+            <option value="">ไตรมาส</option>
+            <option value="1">Q1 (ม.ค.–มี.ค.)</option>
+            <option value="2">Q2 (เม.ย.–มิ.ย.)</option>
+            <option value="3">Q3 (ก.ค.–ก.ย.)</option>
+            <option value="4">Q4 (ต.ค.–ธ.ค.)</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <div class="filter-label">พนักงาน</div>
+          <select class="filter-control" id="filterEmployee" onchange="renderSummary()">
+            <option value="">ทั้งหมด</option>
+          </select>
+        </div>
+        <div class="filter-group" style="justify-content:flex-end">
+          <div class="filter-label">&nbsp;</div>
+          <button class="btn-reset" onclick="resetFilters()">ล้างตัวกรอง</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI Row -->
+    <div class="kpi-row" id="kpiRow">
+      <div class="kpi-card">
+        <div class="kpi-label">ยอดขาย (ก่อน VAT)</div>
+        <div class="kpi-value blue" id="kpiBeforeVat">฿0.00</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">ยอดขาย (รวม VAT)</div>
+        <div class="kpi-value" id="kpiWithVat">฿0.00</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">จำนวนเซลล์</div>
+        <div class="kpi-value" id="kpiCount">0</div>
+        <div class="kpi-sub">รายการ</div>
+      </div>
+      <div class="top-sellers-card">
+        <div class="top-sellers-title">🏆 TOP SELLERS</div>
+        <div id="topSellersList"></div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-row" id="chartsSection">
+      <div class="chart-card">
+        <div class="chart-title">ยอดขายตามพนักงาน</div>
+        <div class="bar-chart" id="empChart"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">ยอดขายตามบริษัท</div>
+        <div class="bar-chart" id="compChart"></div>
+      </div>
+    </div>
+
+    <!-- Monthly Chart -->
+    <div class="chart-card" id="monthlyChartCard" style="margin-bottom:22px;display:none;">
+      <div class="chart-title" id="monthlyChartTitle">ยอดขายรายเดือน</div>
+      <div style="overflow-x:auto;padding-bottom:10px;">
+        <div class="monthly-chart" id="monthlyChart" style="min-width:300px;"></div>
+      </div>
+    </div>
+
+    <!-- Table (single day only) -->
+    <div id="tableSection" style="display:none;">
+      <div class="table-card">
+        <div class="table-header-row">รายการขายในวันนี้</div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>พนักงาน</th>
+                <th>บริษัท</th>
+                <th>วันที่</th>
+                <th>ก่อน VAT</th>
+                <th>รวม VAT</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="salesTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="noDataMsg" class="no-data" style="display:none;">
+      <div class="no-data-icon">📊</div>
+      ไม่มีข้อมูลในช่วงเวลาที่เลือก
+    </div>
+  </div>
+</div>
+
+<!-- FAB -->
+<div class="fab-container">
+  <div class="fab-menu" id="fabMenu">
+    <div class="fab-menu-item" onclick="openRecentModal()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      ดูรายการล่าสุด
+    </div>
+    <div class="fab-menu-item" onclick="openAddEmpModal()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+      เพิ่มพนักงาน
+    </div>
+    <div class="fab-menu-item" onclick="openAddCompModal()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      เพิ่มบริษัท
+    </div>
+  </div>
+  <button class="fab-btn" onclick="toggleFab()">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+</div>
+
+<!-- MODALS -->
+<!-- Add Employee -->
+<div class="modal-overlay" id="addEmpModal">
+  <div class="modal">
+    <div class="modal-title">เพิ่มพนักงาน</div>
+    <input type="text" class="form-control" id="newEmpName" placeholder="ชื่อพนักงาน">
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('addEmpModal')">ยกเลิก</button>
+      <button class="btn-primary" onclick="addEmployee()">เพิ่ม</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Company -->
+<div class="modal-overlay" id="addCompModal">
+  <div class="modal">
+    <div class="modal-title">เพิ่มบริษัท</div>
+    <input type="text" class="form-control" id="newCompName" placeholder="ชื่อบริษัท">
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('addCompModal')">ยกเลิก</button>
+      <button class="btn-primary" onclick="addCompany()">เพิ่ม</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Sale -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-title">แก้ไขรายการ</div>
+    <input type="hidden" id="editId">
+    <div class="form-group">
+      <label class="form-label">พนักงาน</label>
+      <select class="form-control" id="editEmployee"></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">บริษัท</label>
+      <select class="form-control" id="editCompany"></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">วันที่</label>
+      <input type="date" class="form-control" id="editDate">
+    </div>
+    <div class="form-group">
+      <label class="form-label">ก่อน VAT</label>
+      <div class="input-prefix"><span>฿</span><input type="number" class="form-control" id="editBeforeVat" step="0.01"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">รวม VAT</label>
+      <div class="input-prefix"><span>฿</span><input type="number" class="form-control" id="editWithVat" step="0.01"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('editModal')">ยกเลิก</button>
+      <button class="btn-primary" onclick="saveEdit()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Recent -->
+<div class="modal-overlay" id="recentModal">
+  <div class="modal" style="min-width:360px;max-width:500px;">
+    <div class="modal-title">รายการล่าสุด</div>
+    <div class="recent-list" id="recentList"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('recentModal')">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ============= DATA =============
+let employees = ['อดุลย์','ณรงค์','วรรณชัย','มนูญกิต','กัญจน์ฐินี'];
+let companies = ['MM','TF'];
+let sales = []; // {id, employee, company, date, beforeVat, withVat}
+
+let selectedEmployee = '';
+let noVat = false;
+let vatLock = { before: false, after: false };
+
+const MONTH_NAMES_TH = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const MONTH_SHORT = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+
+function thYear(y) { return y + 543; }
+function formatDateTH(dateStr) {
+  if (!dateStr) return '';
+  const [y,m,d] = dateStr.split('-');
+  return `${parseInt(d)} ${MONTH_NAMES_TH[parseInt(m)-1]} ${thYear(parseInt(y))}`;
+}
+function formatMoney(n) {
+  if (n === null || n === undefined || isNaN(n)) return '฿0.00';
+  return '฿' + Number(n).toLocaleString('th-TH', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+// ============= PAGE NAV =============
+function showPage(p) {
+  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  document.getElementById('nav-'+p).classList.add('active');
+  closeFab();
+  if (p === 'summary') {
+    initSummaryFilters();
+    renderSummary();
+  }
+}
+
+// ============= EMPLOYEE DROPDOWN =============
+function renderEmpList(filter='') {
+  const list = document.getElementById('empList');
+  const filtered = employees.filter(e => e.includes(filter));
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="emp-empty">ไม่พบพนักงาน</div>';
+    return;
+  }
+  list.innerHTML = filtered.map(e => `
+    <div class="emp-item ${selectedEmployee===e?'selected':''}" onclick="selectEmployee('${e}')">
+      <div class="emp-avatar">${e.charAt(0)}</div>
+      ${e}
+    </div>
+  `).join('');
+}
+function toggleEmpDropdown() {
+  const dd = document.getElementById('empDropdown');
+  const disp = document.getElementById('empDisplay');
+  dd.classList.toggle('open');
+  disp.classList.toggle('open');
+  if (dd.classList.contains('open')) {
+    document.getElementById('empSearch').value = '';
+    renderEmpList('');
+    setTimeout(() => document.getElementById('empSearch').focus(), 50);
+  }
+}
+function closeEmpDropdown() {
+  document.getElementById('empDropdown').classList.remove('open');
+  document.getElementById('empDisplay').classList.remove('open');
+}
+function selectEmployee(name) {
+  selectedEmployee = name;
+  document.getElementById('empDisplayText').textContent = name;
+  document.getElementById('empDisplayText').style.color = 'var(--gray-800)';
+  closeEmpDropdown();
+}
+function filterEmployees(val) {
+  renderEmpList(val);
+}
+document.addEventListener('click', (e) => {
+  const wrapper = document.getElementById('empDisplay').closest('.emp-wrapper');
+  if (!wrapper.contains(e.target)) closeEmpDropdown();
+  const fab = document.getElementById('fabMenu');
+  if (!e.target.closest('.fab-container')) closeFab();
+});
+
+// ============= COMPANY =============
+function renderCompanySelect(selectId='companySelect') {
+  const sel = document.getElementById(selectId);
+  const cur = sel.value;
+  sel.innerHTML = `<option value="">เลือกบริษัท</option>` + companies.map(c => `<option value="${c}">${c}</option>`).join('');
+  if (companies.includes(cur)) sel.value = cur;
+}
+
+// ============= VAT LOGIC =============
+function handleBeforeVat() {
+  if (noVat) { syncNoVat(); return; }
+  const bv = document.getElementById('amtBeforeVat');
+  const wv = document.getElementById('amtWithVat');
+  if (wv.value === '' || !vatLock.after) {
+    vatLock.before = true; vatLock.after = false;
+    if (bv.value !== '') {
+      wv.value = (parseFloat(bv.value) * 1.07).toFixed(2);
+    } else { wv.value = ''; }
+  }
+}
+function handleWithVat() {
+  if (noVat) { syncNoVat(); return; }
+  const bv = document.getElementById('amtBeforeVat');
+  const wv = document.getElementById('amtWithVat');
+  if (bv.value === '' || !vatLock.before) {
+    vatLock.after = true; vatLock.before = false;
+    if (wv.value !== '') {
+      bv.value = (parseFloat(wv.value) / 1.07).toFixed(2);
+    } else { bv.value = ''; }
+  }
+}
+function syncNoVat() {
+  const bv = document.getElementById('amtBeforeVat');
+  const wv = document.getElementById('amtWithVat');
+  if (bv.value !== '') wv.value = bv.value;
+  else if (wv.value !== '') bv.value = wv.value;
+}
+function toggleNoVat() {
+  noVat = !noVat;
+  const cb = document.getElementById('noVatCheck');
+  cb.classList.toggle('checked', noVat);
+  vatLock = { before: false, after: false };
+  if (noVat) syncNoVat();
+}
+
+// ============= SUBMIT =============
+function submitSale() {
+  if (!selectedEmployee) { showToast('กรุณาเลือกพนักงาน', 'error'); return; }
+  const company = document.getElementById('companySelect').value;
+  if (!company) { showToast('กรุณาเลือกบริษัท', 'error'); return; }
+  const date = document.getElementById('saleDate').value;
+  if (!date) { showToast('กรุณาเลือกวันที่', 'error'); return; }
+  const bv = parseFloat(document.getElementById('amtBeforeVat').value);
+  const wv = parseFloat(document.getElementById('amtWithVat').value);
+  if (isNaN(bv) || isNaN(wv)) { showToast('กรุณากรอกจำนวนเงิน', 'error'); return; }
+
+  const id = Date.now();
+  sales.push({ id, employee: selectedEmployee, company, date, beforeVat: bv, withVat: wv, noVat });
+  
+  showToast('บันทึกสำเร็จ ✓');
+  resetForm();
+}
+function resetForm() {
+  selectedEmployee = '';
+  document.getElementById('empDisplayText').textContent = 'เลือกพนักงาน';
+  document.getElementById('empDisplayText').style.color = 'var(--gray-400)';
+  document.getElementById('companySelect').value = '';
+  document.getElementById('saleDate').value = '';
+  document.getElementById('amtBeforeVat').value = '';
+  document.getElementById('amtWithVat').value = '';
+  noVat = false;
+  vatLock = { before: false, after: false };
+  document.getElementById('noVatCheck').classList.remove('checked');
+}
+
+// ============= FAB =============
+function toggleFab() { document.getElementById('fabMenu').classList.toggle('open'); }
+function closeFab() { document.getElementById('fabMenu').classList.remove('open'); }
+
+// ============= MODALS =============
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function openAddEmpModal() { closeFab(); document.getElementById('newEmpName').value = ''; openModal('addEmpModal'); }
+function addEmployee() {
+  const name = document.getElementById('newEmpName').value.trim();
+  if (!name) { showToast('กรุณากรอกชื่อ', 'error'); return; }
+  if (employees.includes(name)) { showToast('มีชื่อนี้แล้ว', 'error'); return; }
+  employees.push(name);
+  renderEmpList('');
+  updateFilterEmployeeOptions();
+  closeModal('addEmpModal');
+  showToast(`เพิ่ม "${name}" แล้ว ✓`);
+}
+
+function openAddCompModal() { closeFab(); document.getElementById('newCompName').value = ''; openModal('addCompModal'); }
+function addCompany() {
+  const name = document.getElementById('newCompName').value.trim();
+  if (!name) { showToast('กรุณากรอกชื่อ', 'error'); return; }
+  if (companies.includes(name)) { showToast('มีบริษัทนี้แล้ว', 'error'); return; }
+  companies.push(name);
+  renderCompanySelect('companySelect');
+  closeModal('addCompModal');
+  showToast(`เพิ่ม "${name}" แล้ว ✓`);
+}
+
+function openRecentModal() {
+  closeFab();
+  const list = document.getElementById('recentList');
+  if (sales.length === 0) {
+    list.innerHTML = '<div class="recent-empty">ยังไม่มีรายการ</div>';
+  } else {
+    const sorted = [...sales].sort((a,b) => b.id - a.id);
+    list.innerHTML = sorted.map(s => `
+      <div class="recent-item">
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--gray-800)">${s.employee}</div>
+          <div class="recent-meta">${formatDateTH(s.date)} · ${s.company}</div>
+        </div>
+        <div>
+          <div class="recent-amount">${formatMoney(s.beforeVat)}</div>
+          <div class="recent-company">ก่อน VAT</div>
+        </div>
+      </div>
+    `).join('');
+  }
+  openModal('recentModal');
+}
+
+// Edit
+function openEdit(id) {
+  const s = sales.find(x => x.id === id);
+  if (!s) return;
+  document.getElementById('editId').value = id;
+  const empSel = document.getElementById('editEmployee');
+  empSel.innerHTML = employees.map(e => `<option value="${e}" ${e===s.employee?'selected':''}>${e}</option>`).join('');
+  const compSel = document.getElementById('editCompany');
+  compSel.innerHTML = companies.map(c => `<option value="${c}" ${c===s.company?'selected':''}>${c}</option>`).join('');
+  document.getElementById('editDate').value = s.date;
+  document.getElementById('editBeforeVat').value = s.beforeVat.toFixed(2);
+  document.getElementById('editWithVat').value = s.withVat.toFixed(2);
+  openModal('editModal');
+}
+function saveEdit() {
+  const id = parseInt(document.getElementById('editId').value);
+  const idx = sales.findIndex(x => x.id === id);
+  if (idx < 0) return;
+  sales[idx] = {
+    ...sales[idx],
+    employee: document.getElementById('editEmployee').value,
+    company: document.getElementById('editCompany').value,
+    date: document.getElementById('editDate').value,
+    beforeVat: parseFloat(document.getElementById('editBeforeVat').value),
+    withVat: parseFloat(document.getElementById('editWithVat').value),
+  };
+  closeModal('editModal');
+  showToast('แก้ไขสำเร็จ ✓');
+  renderSummary();
+}
+function deleteSale(id) {
+  if (!confirm('ยืนยันลบรายการนี้?')) return;
+  sales = sales.filter(x => x.id !== id);
+  showToast('ลบแล้ว');
+  renderSummary();
+}
+
+// ============= TOAST =============
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (type === 'error' ? ' error' : '') + ' show';
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ============= SUMMARY PAGE =============
+function getUniqueDates() { return [...new Set(sales.map(s => s.date))].sort(); }
+function getUniqueYears() { return [...new Set(sales.map(s => parseInt(s.date.split('-')[0])))].sort(); }
+function getUniqueMonths() {
+  const set = new Set(sales.map(s => s.date.substring(0,7)));
+  return [...set].sort();
+}
+
+function initSummaryFilters() {
+  const years = getUniqueYears();
+  const ys = document.getElementById('filterYearStart');
+  const ye = document.getElementById('filterYearEnd');
+  const ms = document.getElementById('filterMonthStart');
+  const me = document.getElementById('filterMonthEnd');
+  [ys, ye].forEach(sel => {
+    sel.innerHTML = '<option value="">ปี</option>' + years.map(y => `<option value="${y}">${thYear(y)}</option>`).join('');
+  });
+  const monthOpts = '<option value="">เดือน</option>' + MONTH_NAMES_TH.map((m,i) => `<option value="${i+1}">${m}</option>`).join('');
+  [ms, me].forEach(sel => sel.innerHTML = monthOpts);
+  updateFilterEmployeeOptions();
+
+  // Default: current month
+  const now = new Date();
+  const curYear = now.getFullYear();
+  const curMonth = now.getMonth() + 1;
+  if (!document.getElementById('filterFrom').value && !document.getElementById('filterMonthStart').value) {
+    document.getElementById('filterMonthStart').value = curMonth;
+    document.getElementById('filterMonthEnd').value = curMonth;
+    document.getElementById('filterYearStart').value = curYear;
+    document.getElementById('filterYearEnd').value = curYear;
+  }
+}
+
+function updateFilterEmployeeOptions() {
+  const sel = document.getElementById('filterEmployee');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">ทั้งหมด</option>' + employees.map(e => `<option value="${e}">${e}</option>`).join('');
+  if (employees.includes(cur)) sel.value = cur;
+}
+
+function onFilterChange(type) {
+  const from = document.getElementById('filterFrom');
+  const to = document.getElementById('filterTo');
+  const ms = document.getElementById('filterMonthStart');
+  const me = document.getElementById('filterMonthEnd');
+  const ys = document.getElementById('filterYearStart');
+  const ye = document.getElementById('filterYearEnd');
+  const q = document.getElementById('filterQuarter');
+
+  if (type === 'date-from') {
+    ms.value = ''; me.value = ''; ys.value = ''; ye.value = ''; q.value = '';
+    if (from.value && !to.value) to.value = from.value;
+  } else if (type === 'date-to') {
+    ms.value = ''; me.value = ''; ys.value = ''; ye.value = ''; q.value = '';
+    if (to.value && !from.value) from.value = to.value;
+    if (from.value && to.value && from.value > to.value) { let tmp = from.value; from.value = to.value; to.value = tmp; }
+  } else if (type === 'month') {
+    from.value = ''; to.value = ''; q.value = '';
+  } else if (type === 'year') {
+    from.value = ''; to.value = ''; q.value = '';
+  } else if (type === 'quarter') {
+    from.value = ''; to.value = ''; ms.value = ''; me.value = '';
+  }
+  renderSummary();
+}
+
+function resetFilters() {
+  document.getElementById('filterFrom').value = '';
+  document.getElementById('filterTo').value = '';
+  document.getElementById('filterMonthStart').value = '';
+  document.getElementById('filterMonthEnd').value = '';
+  document.getElementById('filterYearStart').value = '';
+  document.getElementById('filterYearEnd').value = '';
+  document.getElementById('filterQuarter').value = '';
+  document.getElementById('filterEmployee').value = '';
+  // Reapply default (current month)
+  initSummaryFilters();
+  renderSummary();
+}
+
+function getFilteredSales() {
+  const from = document.getElementById('filterFrom').value;
+  const to = document.getElementById('filterTo').value;
+  const ms = parseInt(document.getElementById('filterMonthStart').value);
+  const me = parseInt(document.getElementById('filterMonthEnd').value);
+  const ys = parseInt(document.getElementById('filterYearStart').value);
+  const ye = parseInt(document.getElementById('filterYearEnd').value);
+  const q = parseInt(document.getElementById('filterQuarter').value);
+  const emp = document.getElementById('filterEmployee').value;
+
+  let filtered = [...sales];
+  if (emp) filtered = filtered.filter(s => s.employee === emp);
+
+  if (from || to) {
+    filtered = filtered.filter(s => {
+      if (from && to) return s.date >= from && s.date <= to;
+      if (from) return s.date === from;
+      if (to) return s.date === to;
+      return true;
+    });
+  } else if (q) {
+    const qMonths = { 1:[1,2,3], 2:[4,5,6], 3:[7,8,9], 4:[10,11,12] }[q];
+    filtered = filtered.filter(s => {
+      const m = parseInt(s.date.split('-')[1]);
+      return qMonths.includes(m);
+    });
+  } else if (ys && ye && !ms && !me) {
+    filtered = filtered.filter(s => {
+      const y = parseInt(s.date.split('-')[0]);
+      return y >= ys && y <= ye;
+    });
+  } else if ((ms || me) && (ys || ye)) {
+    const startY = ys || ye;
+    const endY = ye || ys;
+    const startM = ms || me;
+    const endM = me || ms;
+    filtered = filtered.filter(s => {
+      const y = parseInt(s.date.split('-')[0]);
+      const m = parseInt(s.date.split('-')[1]);
+      const cur = y * 100 + m;
+      return cur >= startY * 100 + startM && cur <= endY * 100 + endM;
+    });
+  }
+  return filtered;
+}
+
+function getFilterRangeDates(filtered) {
+  if (filtered.length === 0) return { from: null, to: null };
+  const dates = filtered.map(s => s.date).sort();
+  return { from: dates[0], to: dates[dates.length-1] };
+}
+
+function buildSummaryTitle(filtered) {
+  if (filtered.length === 0) return { title: 'สรุปยอดขาย', sub: 'ไม่มีข้อมูล' };
+  const { from, to } = getFilterRangeDates(filtered);
+  if (from === to) {
+    return { title: `สรุปยอดขาย ${formatDateTH(from)}`, sub: '' };
+  }
+  return { title: `สรุปยอดขาย ${formatDateTH(from)} — ${formatDateTH(to)}`, sub: '' };
+}
+
+function renderSummary() {
+  const filtered = getFilteredSales();
+  const { title, sub } = buildSummaryTitle(filtered);
+  document.getElementById('summaryTitle').textContent = title;
+  document.getElementById('summarySubtitle').textContent = sub;
+
+  if (filtered.length === 0) {
+    document.getElementById('noDataMsg').style.display = 'block';
+    document.getElementById('kpiRow').style.display = 'none';
+    document.getElementById('chartsSection').style.display = 'none';
+    document.getElementById('tableSection').style.display = 'none';
+    document.getElementById('monthlyChartCard').style.display = 'none';
+    return;
+  }
+  document.getElementById('noDataMsg').style.display = 'none';
+  document.getElementById('kpiRow').style.display = 'flex';
+  document.getElementById('chartsSection').style.display = 'grid';
+
+  // KPI
+  const totalBefore = filtered.reduce((s,x) => s + x.beforeVat, 0);
+  const totalWith = filtered.reduce((s,x) => s + x.withVat, 0);
+  document.getElementById('kpiBeforeVat').textContent = formatMoney(totalBefore);
+  document.getElementById('kpiWithVat').textContent = formatMoney(totalWith);
+  document.getElementById('kpiCount').textContent = filtered.length;
+
+  // Top sellers
+  const empTotals = {};
+  filtered.forEach(s => { empTotals[s.employee] = (empTotals[s.employee]||0) + s.beforeVat; });
+  const top3 = Object.entries(empTotals).sort((a,b) => b[1]-a[1]).slice(0,3);
+  const medals = ['🥇','🥈','🥉'];
+  document.getElementById('topSellersList').innerHTML = top3.length ? top3.map((e,i) => `
+    <div class="seller-item">
+      <span class="seller-rank">${medals[i]}</span>
+      <span class="seller-name">${e[0]}</span>
+      <span class="seller-amount">${formatMoney(e[1])}</span>
+    </div>
+  `).join('') : '<div style="font-size:13px;color:var(--gray-400)">ไม่มีข้อมูล</div>';
+
+  // Employee chart
+  const empEntries = Object.entries(empTotals).sort((a,b) => b[1]-a[1]);
+  const maxEmp = empEntries.length ? empEntries[0][1] : 1;
+  document.getElementById('empChart').innerHTML = empEntries.map(([name, val]) => {
+    const pct = ((val / totalBefore) * 100).toFixed(1);
+    const barW = Math.max(10, (val / maxEmp) * 100).toFixed(1);
+    return `
+      <div class="bar-row">
+        <div class="bar-name" title="${name}">${name}</div>
+        <div class="bar-track">
+          <div class="bar-fill bar-fill-employee" style="width:${barW}%">
+            <span class="bar-label">${formatMoney(val)} (${pct}%)</span>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  // Company chart
+  const compTotals = {};
+  filtered.forEach(s => { compTotals[s.company] = (compTotals[s.company]||0) + s.beforeVat; });
+  const compEntries = Object.entries(compTotals).sort((a,b) => b[1]-a[1]);
+  const maxComp = compEntries.length ? compEntries[0][1] : 1;
+  document.getElementById('compChart').innerHTML = compEntries.map(([name, val]) => {
+    const pct = ((val / totalBefore) * 100).toFixed(1);
+    const barW = Math.max(10, (val / maxComp) * 100).toFixed(1);
+    return `
+      <div class="bar-row">
+        <div class="bar-name" title="${name}">${name}</div>
+        <div class="bar-track">
+          <div class="bar-fill bar-fill-company" style="width:${barW}%">
+            <span class="bar-label">${formatMoney(val)} (${pct}%)</span>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  // Monthly chart
+  const { from: rFrom, to: rTo } = getFilterRangeDates(filtered);
+  const fromM = rFrom ? rFrom.substring(0,7) : null;
+  const toM = rTo ? rTo.substring(0,7) : null;
+  const monthlyData = {};
+  filtered.forEach(s => {
+    const ym = s.date.substring(0,7);
+    monthlyData[ym] = (monthlyData[ym]||0) + s.beforeVat;
+  });
+  const monthKeys = Object.keys(monthlyData).sort();
+  if (monthKeys.length > 1) {
+    document.getElementById('monthlyChartCard').style.display = 'block';
+    const maxMon = Math.max(...Object.values(monthlyData));
+    document.getElementById('monthlyChart').innerHTML = monthKeys.map(ym => {
+      const [y,m] = ym.split('-');
+      const val = monthlyData[ym];
+      const h = Math.max(8, (val / maxMon) * 130);
+      const pct = ((val/totalBefore)*100).toFixed(1);
+      return `
+        <div class="month-bar-wrap">
+          <div class="month-bar" style="height:${h}px">
+            <div class="month-bar-amount">${formatMoney(val)}<br><span style="font-weight:500;color:var(--gray-400)">${pct}%</span></div>
+          </div>
+          <div class="month-bar-label">${MONTH_SHORT[parseInt(m)-1]}<br>${thYear(parseInt(y))}</div>
+        </div>`;
+    }).join('');
+  } else {
+    document.getElementById('monthlyChartCard').style.display = 'none';
+  }
+
+  // Table (single day only)
+  const isSingleDay = rFrom && rTo && rFrom === rTo;
+  if (isSingleDay) {
+    document.getElementById('tableSection').style.display = 'block';
+    document.getElementById('salesTable').innerHTML = filtered.map(s => `
+      <tr>
+        <td>${s.employee}</td>
+        <td>${s.company}</td>
+        <td>${formatDateTH(s.date)}</td>
+        <td class="td-amount">${formatMoney(s.beforeVat)}</td>
+        <td class="td-amount">${formatMoney(s.withVat)}</td>
+        <td><div class="td-actions">
+          <button class="btn-action btn-edit" onclick="openEdit(${s.id})">แก้ไข</button>
+          <button class="btn-action btn-delete" onclick="deleteSale(${s.id})">ลบ</button>
+        </div></td>
+      </tr>
+    `).join('');
+  } else {
+    document.getElementById('tableSection').style.display = 'none';
+  }
+}
+
+// ============= INIT =============
+function init() {
+  renderEmpList('');
+  renderCompanySelect('companySelect');
+  // Set today's date in form
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth()+1).padStart(2,'0');
+  const d = String(now.getDate()).padStart(2,'0');
+  document.getElementById('saleDate').value = `${y}-${m}-${d}`;
+}
+init();
+</script>
+</body>
+</html>
